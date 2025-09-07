@@ -1,0 +1,14 @@
+version: '3.7'
+services:
+  db:
+    image: mongo:6.0.15-jammy
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ccaste
+      MONGO_INITDB_ROOT_PASSWORD: password
+    ports:
+      - '27017:27017'
+    volumes:
+      - db-data:/data/db
+
+volumes:
+  db-data:
