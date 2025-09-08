@@ -80,4 +80,8 @@ export class Budget {
       saving: this.saving?.toPrimitives(),
     }
   }
+
+  getId() {
+    return this.id
+  }
 }
