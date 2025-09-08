@@ -6,7 +6,7 @@ import type { Year } from '../models/Year.ts'
 
 export interface BudgetsRepository {
   save(budget: Budget): Promise<void>
-  findById(id: BudgetId): Promise<Budget | undefined>
-  findByUserId(userId: UserId): Promise<Budget[]>
-  findByUserIdMonthAndYear(userId: UserId, month: Month, year: Year): Promise<Budget | undefined>
+  findOneById(id: BudgetId): Promise<Budget | undefined>
+  findManyByUserId(userId: UserId): Promise<Budget[]>
+  findOneByUserIdMonthAndYear(userId: UserId, month: Month, year: Year): Promise<Budget | undefined>
 }
