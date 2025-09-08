@@ -27,7 +27,7 @@ describe('CreateBudget', () => {
       year,
     })
 
-    const savedBudget = budgetsRepository.findByUserIdMonthAndYear(userId, month, year)
+    const savedBudget = budgetsRepository.findOneByUserIdMonthAndYear(userId, month, year)
 
     expect(savedBudget).toBeDefined()
   })
