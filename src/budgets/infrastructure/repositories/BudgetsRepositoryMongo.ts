@@ -26,18 +26,18 @@ export class BudgetsRepositoryMongo implements BudgetsRepository, Reseteable, Cl
     await this.budgets.updateOne({ id: primitives.id }, { $set: primitives }, { upsert: true })
   }
 
-  async findById(id: BudgetId): Promise<Budget | undefined> {
+  async findOneById(id: BudgetId): Promise<Budget | undefined> {
     const primitives = await this.budgets.findOne({ id: id.toPrimitives() })
     if (!primitives) return undefined
     return Budget.fromPrimitives(primitives)
   }
 
-  async findByUserId(userId: UserId): Promise<Budget[]> {
+  async findManyByUserId(userId: UserId): Promise<Budget[]> {
     const primitives = await this.budgets.find({ userId: userId.toPrimitives() }).toArray()
     return primitives.map(Budget.fromPrimitives)
   }
 
-  async findByUserIdMonthAndYear(
+  async findOneByUserIdMonthAndYear(
     userId: UserId,
     month: Month,
     year: Year

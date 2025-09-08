@@ -23,20 +23,20 @@ export class BudgetsRepositoryMemory implements BudgetsRepository, Reseteable, C
     this.budgets.set(budgetPrimitives.id, budgetPrimitives)
   }
 
-  async findById(id: BudgetId): Promise<Budget | undefined> {
+  async findOneById(id: BudgetId): Promise<Budget | undefined> {
     const budgetPrimitives = this.budgets.get(id.toPrimitives())
     if (!budgetPrimitives) return undefined
     return Budget.fromPrimitives(budgetPrimitives)
   }
 
-  async findByUserId(userId: UserId): Promise<Budget[]> {
+  async findManyByUserId(userId: UserId): Promise<Budget[]> {
     const budgetPrimitives = [...this.budgets.values()]
     return budgetPrimitives
       .filter((budget) => budget.userId === userId.toPrimitives())
       .map(Budget.fromPrimitives)
   }
 
-  async findByUserIdMonthAndYear(
+  async findOneByUserIdMonthAndYear(
     userId: UserId,
     month: Month,
     year: Year
