@@ -2,12 +2,14 @@ import type { interfaces } from 'inversify'
 import { type Collection, Db } from 'mongodb'
 import { BudgetId } from '../../../shared/domain/models/ids/BudgetId.ts'
 import type { UserId } from '../../../shared/domain/models/ids/UserId.ts'
+import type { Closable } from '../../../shared/infrastructure/repositories/Closable.ts'
+import type { Reseteable } from '../../../shared/infrastructure/repositories/Reseteable.ts'
 import { Budget, type BudgetPrimitives } from '../../domain/models/Budget.ts'
 import type { Month } from '../../domain/models/Month.ts'
 import type { Year } from '../../domain/models/Year.ts'
 import type { BudgetsRepository } from '../../domain/repositories/BudgetsRepository.ts'
 
-export class BudgetsRepositoryMongo implements BudgetsRepository {
+export class BudgetsRepositoryMongo implements BudgetsRepository, Reseteable, Closable {
   public static async create({ container }: interfaces.Context) {
     const db = await container.getAsync(Db)
     return new BudgetsRepositoryMongo(db)
@@ -40,8 +42,18 @@ export class BudgetsRepositoryMongo implements BudgetsRepository {
     month: Month,
     year: Year
   ): Promise<Budget | undefined> {
-    const primitives = await this.budgets.findOne({ userId: userId.toPrimitives(), month, year })
+    const primitives = await this.budgets.findOne({
+      userId: userId.toPrimitives(),
+      month: month.toPrimitives(),
+      year: year.toPrimitives(),
+    })
     if (!primitives) return undefined
     return Budget.fromPrimitives(primitives)
   }
+
+  async reset() {
+    await this.budgets.deleteMany()
+  }
+
+  async close(): Promise<void> {}
 }
