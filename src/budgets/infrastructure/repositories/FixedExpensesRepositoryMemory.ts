@@ -1,4 +1,5 @@
 import type { ExtensableMoneyMovementId } from '../../../shared/domain/models/ids/ExtensableMoneyMovementId.ts'
+import type { FixedExpenseId } from '../../../shared/domain/models/ids/FixedExpenseId.ts'
 import type { Closable } from '../../../shared/infrastructure/repositories/Closable.ts'
 import type { Reseteable } from '../../../shared/infrastructure/repositories/Reseteable.ts'
 import { FixedExpense, type FixedExpensePrimitives } from '../../domain/models/FixedExpense.ts'
@@ -20,7 +21,7 @@ export class FixedExpensesRepositoryMemory implements FixedExpensesRepository, R
     this.fixedExpenses.set(fixedExpensePrimitives.id, fixedExpensePrimitives)
   }
 
-  async findById(id: ExtensableMoneyMovementId): Promise<FixedExpense | undefined> {
+  async findOneById(id: FixedExpenseId): Promise<FixedExpense | undefined> {
     const fixedExpensePrimitives = this.fixedExpenses.get(id.toPrimitives())
     if (!fixedExpensePrimitives) return undefined
     return FixedExpense.fromPrimitives(fixedExpensePrimitives)
