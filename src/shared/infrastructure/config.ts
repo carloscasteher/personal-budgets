@@ -14,4 +14,5 @@ export const config = {
     secret: process.env.JWT_SECRET || 'ilovedogs',
   },
   listeningPort: Number.parseInt(process.env.APP_PORT || '8080', 10),
+  forceEnableORMRepositories: false,
 }

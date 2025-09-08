@@ -1,11 +1,13 @@
 import { BudgetId } from '../../../shared/domain/models/ids/BudgetId.ts'
 import type { UserId } from '../../../shared/domain/models/ids/UserId.ts'
+import type { Closable } from '../../../shared/infrastructure/repositories/Closable.ts'
+import type { Reseteable } from '../../../shared/infrastructure/repositories/Reseteable.ts'
 import { Budget, type BudgetPrimitives } from '../../domain/models/Budget.ts'
 import type { Month } from '../../domain/models/Month.ts'
 import type { Year } from '../../domain/models/Year.ts'
 import type { BudgetsRepository } from '../../domain/repositories/BudgetsRepository.ts'
 
-export class BudgetsRepositoryMemory implements BudgetsRepository {
+export class BudgetsRepositoryMemory implements BudgetsRepository, Reseteable, Closable {
   public static create() {
     return new BudgetsRepositoryMemory()
   }
@@ -21,31 +23,39 @@ export class BudgetsRepositoryMemory implements BudgetsRepository {
     this.budgets.set(budgetPrimitives.id, budgetPrimitives)
   }
 
-  async findById(id: BudgetId): Promise<Budget | undefined> {
+  async findOneById(id: BudgetId): Promise<Budget | undefined> {
     const budgetPrimitives = this.budgets.get(id.toPrimitives())
     if (!budgetPrimitives) return undefined
     return Budget.fromPrimitives(budgetPrimitives)
   }
 
-  async findByUserId(userId: UserId): Promise<Budget[]> {
+  async findManyByUserId(userId: UserId): Promise<Budget[]> {
     const budgetPrimitives = [...this.budgets.values()]
     return budgetPrimitives
       .filter((budget) => budget.userId === userId.toPrimitives())
       .map(Budget.fromPrimitives)
   }
 
-  async findByUserIdMonthAndYear(
+  async findOneByUserIdMonthAndYear(
     userId: UserId,
     month: Month,
     year: Year
   ): Promise<Budget | undefined> {
     const budgetPrimitives = [...this.budgets.values()].find(
       (budget) =>
-        budget.userId === userId.toPrimitives() && budget.month === month && budget.year === year
+        budget.userId === userId.toPrimitives() &&
+        budget.month === month.toPrimitives() &&
+        budget.year === year.toPrimitives()
     )
 
     if (!budgetPrimitives) return undefined
 
     return Budget.fromPrimitives(budgetPrimitives)
   }
+
+  async reset() {
+    this.budgets.clear()
+  }
+
+  async close(): Promise<void> {}
 }
