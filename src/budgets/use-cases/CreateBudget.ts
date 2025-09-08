@@ -27,7 +27,7 @@ export class CreateBudget {
   }
 
   private async ensureBudgetDoesNotAlreadyExist(userId: UserId, month: Month, year: Year) {
-    const budget = await this.budgetsRepository.findByUserIdMonthAndYear(userId, month, year)
+    const budget = await this.budgetsRepository.findOneByUserIdMonthAndYear(userId, month, year)
     if (budget) {
       throw new Error('Budget already exists') // TODO: create a custom error
     }
