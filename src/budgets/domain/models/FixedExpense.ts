@@ -1,39 +1,50 @@
-import { ExtensableMoneyMovement } from './ExtensableMoneyMovement.ts'
+import { Day } from './Day.ts'
 import { ExtensableMoneyMovementId } from '../../../shared/domain/models/ids/ExtensableMoneyMovementId.ts'
 import { FixedExpenseId } from '../../../shared/domain/models/ids/FixedExpenseId.ts'
 import { MoneyAmount } from './MoneyAmount.ts'
-import { MoneyMovement } from './MoneyMovement.ts'
-import type { Month } from './Month.ts'
+import { Month } from './Month.ts'
 import type { Primitives } from '../../../shared/domain/models/hex/Primitives.ts'
 import { UserId } from '../../../shared/domain/models/ids/UserId.ts'
 import { UuidGeneratorRandom } from '../../../shared/infrastructure/services/uuid-generator/UuidGeneratorRandom.ts'
-import type { Year } from './Year.ts'
+import { Year } from './Year.ts'
 
 export type CreateFixedExpenseParams = {
   startDate: Date
   endDate: Date
   description: string
   amount: MoneyAmount
-  date: Date
   userId: UserId
 }
 
 export type FixedExpensePrimitives = Primitives<FixedExpense>
 
-export class FixedExpense extends ExtensableMoneyMovement {
+export class FixedExpense {
+  private id: FixedExpenseId
+
   private userId: UserId
 
+  private startDate: Date
+
+  private endDate: Date
+
+  private description: string
+
+  private amount: MoneyAmount
+
   private constructor(
+    id: FixedExpenseId,
+    userId: UserId,
     startDate: Date,
     endDate: Date,
-    id: FixedExpenseId,
     description: string,
-    amount: MoneyAmount,
-    date: Date,
-    userId: UserId
+    amount: MoneyAmount
   ) {
-    super(startDate, endDate, id, description, amount, date)
+    this.id = id
     this.userId = userId
+    this.startDate = startDate
+    this.endDate = endDate
+    this.description = description
+    this.amount = amount
   }
 
   static createNew({
@@ -41,23 +52,31 @@ export class FixedExpense extends ExtensableMoneyMovement {
     endDate,
     description,
     amount,
-    date,
     userId,
   }: CreateFixedExpenseParams): FixedExpense {
     const id = ExtensableMoneyMovementId.fromPrimitives(UuidGeneratorRandom.generate())
-    return new FixedExpense(startDate, endDate, id, description, amount, date, userId)
+    return new FixedExpense(id, userId, startDate, endDate, description, amount)
   }
 
   static fromPrimitives(primitives: FixedExpensePrimitives): FixedExpense {
     return new FixedExpense(
+      FixedExpenseId.fromPrimitives(primitives.id),
+      UserId.fromPrimitives(primitives.userId),
       primitives.startDate,
       primitives.endDate,
-      FixedExpenseId.fromPrimitives(primitives.id),
       primitives.description,
-      MoneyAmount.fromCents(primitives.amount),
-      primitives.date,
-      UserId.fromPrimitives(primitives.userId)
+      MoneyAmount.fromCents(primitives.amount)
     )
+  }
+
+  getMoneyMovementNeededData(month: Month, year: Year) {
+    const day = Day.fromPrimitives(this.startDate.getDate())
+    const date = new Date(`${year.toPrimitives()}-${month.formatForDate()}-${day.formatForDate()}`)
+    return {
+      description: this.description,
+      amount: this.amount,
+      date,
+    }
   }
 
   toPrimitives() {
@@ -67,19 +86,8 @@ export class FixedExpense extends ExtensableMoneyMovement {
       endDate: this.endDate,
       description: this.description,
       amount: this.amount.getValue(),
-      date: this.date,
       userId: this.userId.toPrimitives(),
     }
-  }
-
-  toMoneyMovement(year: Year, month: Month) {
-    const day = this.date.getDate() < 10 ? `0${this.date.getDate()}` : this.date.getDate()
-    const date = new Date(`${year.toPrimitives()}-${month.toPrimitives()}-${day}`).toUTCString()
-    return MoneyMovement.createNew({
-      description: this.description,
-      amount: this.amount,
-      date: new Date(date),
-    })
   }
 
   getId() {
