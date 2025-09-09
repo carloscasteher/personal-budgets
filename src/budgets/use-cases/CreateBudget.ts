@@ -1,28 +1,58 @@
-import type { interfaces } from 'inversify'
-import type { UserId } from '../../shared/domain/models/ids/UserId.ts'
-import { Token } from '../../shared/domain/services/Token.ts'
-import { Budget, type CreateBudgetParams } from '../domain/models/Budget.ts'
-import type { Month } from '../domain/models/Month.ts'
-import type { Year } from '../domain/models/Year.ts'
+import { Budget } from '../domain/models/Budget.ts'
 import type { BudgetsRepository } from '../domain/repositories/BudgetsRepository.ts'
+import type { FixedExpensesRepository } from '../domain/repositories/FixedExpensesRepository.ts'
+import { MoneyMovement } from '../domain/models/MoneyMovement.ts'
+import type { Month } from '../domain/models/Month.ts'
+import { Token } from '../../shared/domain/services/Token.ts'
+import type { UserId } from '../../shared/domain/models/ids/UserId.ts'
+import type { Year } from '../domain/models/Year.ts'
+import type { interfaces } from 'inversify'
+
+type CreateBudgetParams = {
+  userId: UserId
+  month: Month
+  year: Year
+}
 
 export class CreateBudget {
   public static async create({ container }: interfaces.Context) {
     return new CreateBudget(
-      ...(await Promise.all([container.getAsync<BudgetsRepository>(Token.BUDGETS_REPOSITORY)]))
+      ...(await Promise.all([
+        container.getAsync<BudgetsRepository>(Token.BUDGETS_REPOSITORY),
+        container.getAsync<FixedExpensesRepository>(Token.FIXED_EXPENSES_REPOSITORY),
+      ]))
     )
   }
 
   private readonly budgetsRepository: BudgetsRepository
 
-  constructor(budgetsRepository: BudgetsRepository) {
+  private readonly fixedExpensesRepository: FixedExpensesRepository
+
+  constructor(
+    budgetsRepository: BudgetsRepository,
+    fixedExpensesRepository: FixedExpensesRepository
+  ) {
     this.budgetsRepository = budgetsRepository
+    this.fixedExpensesRepository = fixedExpensesRepository
   }
 
-  async execute({ userId, month, year, incomes, expenses, saving }: CreateBudgetParams) {
+  async execute({ userId, month, year }: CreateBudgetParams) {
     await this.ensureBudgetDoesNotAlreadyExist(userId, month, year)
+    const fixedExpenses = await this.fixedExpensesRepository.findAllActivesByUserId(
+      userId,
+      month,
+      year
+    )
+    const fixedExpensesMoneyMovements = fixedExpenses.map((fixedExpense) =>
+      MoneyMovement.createNew(fixedExpense.getMoneyMovementNeededData(month, year))
+    )
+    const budget = Budget.createNew({
+      userId,
+      month,
+      year,
+      fixedExpensesMoneyMovements,
+    })
 
-    const budget = Budget.createNew({ userId, month, year, incomes, expenses, saving })
     await this.budgetsRepository.save(budget)
   }
 

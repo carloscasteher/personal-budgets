@@ -41,6 +41,7 @@ describe('BudgetsRepositoryMongo', () => {
           userId: new UserId(UuidGeneratorRandom.generate()),
           month: Month.fromPrimitives(1),
           year: Year.fromPrimitives(2021),
+          fixedExpensesMoneyMovements: [],
         })
         await budgetRepository.save(budget)
 
@@ -55,6 +56,7 @@ describe('BudgetsRepositoryMongo', () => {
           userId,
           month: Month.fromPrimitives(1),
           year: Year.fromPrimitives(2021),
+          fixedExpensesMoneyMovements: [],
         })
         await budgetRepository.save(budget)
 
@@ -70,7 +72,8 @@ describe('BudgetsRepositoryMongo', () => {
         const budget = Budget.createNew({
           userId,
           month,
-          year,
+          year, 
+          fixedExpensesMoneyMovements: [],
         })
         await budgetRepository.save(budget)
 

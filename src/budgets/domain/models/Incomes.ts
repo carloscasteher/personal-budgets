@@ -1,29 +1,30 @@
+import { MoneyAmount } from './MoneyAmount.ts'
 import { MoneyMovement } from './MoneyMovement.ts'
 import type { Primitives } from '../../../shared/domain/models/hex/Primitives.ts'
 
 export type IncomesPrimitives = Primitives<Incomes>
 
 export type CreateIncomesParams = {
-  salary: MoneyMovement
-  fromPreviousMonth: MoneyMovement
-  extras: MoneyMovement[]
+  salary: MoneyAmount
+  fromPreviousMonth?: MoneyAmount
+  extras?: MoneyMovement[]
 }
 
 export class Incomes {
-  private salary: MoneyMovement
+  private salary: MoneyAmount
 
-  private fromPreviousMonth: MoneyMovement
+  private fromPreviousMonth: MoneyAmount
 
   private extras: MoneyMovement[]
 
   private constructor(
-    salary: MoneyMovement,
-    fromPreviousMonth: MoneyMovement,
-    extras: MoneyMovement[]
+    salary: MoneyAmount,
+    fromPreviousMonth?: MoneyAmount,
+    extras?: MoneyMovement[]
   ) {
     this.salary = salary
-    this.fromPreviousMonth = fromPreviousMonth
-    this.extras = extras
+    this.fromPreviousMonth = fromPreviousMonth ?? MoneyAmount.fromCents(0)
+    this.extras = extras ?? []
   }
 
   static createNew({ salary, fromPreviousMonth, extras }: CreateIncomesParams): Incomes {
@@ -32,16 +33,20 @@ export class Incomes {
 
   static fromPrimitives(primitives: IncomesPrimitives): Incomes {
     return new Incomes(
-      MoneyMovement.fromPrimitives(primitives.salary),
-      MoneyMovement.fromPrimitives(primitives.fromPreviousMonth),
+      MoneyAmount.fromCents(primitives.salary),
+      MoneyAmount.fromCents(primitives.fromPreviousMonth),
       primitives.extras.map((extra) => MoneyMovement.fromPrimitives(extra))
     )
   }
 
+  static createEmpty(): Incomes {
+    return new Incomes(MoneyAmount.fromCents(0), MoneyAmount.fromCents(0))
+  }
+
   toPrimitives() {
     return {
-      salary: this.salary.toPrimitives(),
-      fromPreviousMonth: this.fromPreviousMonth.toPrimitives(),
+      salary: this.salary.getValue(),
+      fromPreviousMonth: this.fromPreviousMonth.getValue(),
       extras: this.extras.map((extra) => extra.toPrimitives()),
     }
   }

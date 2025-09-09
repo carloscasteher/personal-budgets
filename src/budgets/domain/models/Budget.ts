@@ -1,20 +1,19 @@
 import { BudgetId } from '../../../shared/domain/models/ids/BudgetId.ts'
 import { Expenses } from './Expenses.ts'
 import { Incomes } from './Incomes.ts'
-import { MoneyMovement } from './MoneyMovement.ts'
+import { MoneyAmount } from './MoneyAmount.ts'
+import type { MoneyMovement } from './MoneyMovement.ts'
 import { Month } from './Month.ts'
 import type { Primitives } from '../../../shared/domain/models/hex/Primitives.ts'
 import { UserId } from '../../../shared/domain/models/ids/UserId.ts'
 import { UuidGeneratorRandom } from '../../../shared/infrastructure/services/uuid-generator/UuidGeneratorRandom.ts'
 import { Year } from './Year.ts'
 
-export type CreateBudgetParams = {
+export type NewBudgetParams = {
   userId: UserId
   month: Month
   year: Year
-  incomes?: Incomes
-  expenses?: Expenses
-  saving?: MoneyMovement
+  fixedExpensesMoneyMovements: MoneyMovement[]
 }
 
 export type BudgetPrimitives = Primitives<Budget>
@@ -28,20 +27,20 @@ export class Budget {
 
   private year: Year
 
-  private incomes?: Incomes
+  private incomes: Incomes
 
-  private expenses?: Expenses
+  private expenses: Expenses
 
-  private saving?: MoneyMovement
+  private saving: MoneyAmount
 
   private constructor(
     id: BudgetId,
     userId: UserId,
     month: Month,
     year: Year,
-    incomes?: Incomes,
-    expenses?: Expenses,
-    saving?: MoneyMovement
+    expenses: Expenses,
+    incomes: Incomes,
+    saving: MoneyAmount
   ) {
     this.id = id
     this.userId = userId
@@ -52,9 +51,16 @@ export class Budget {
     this.saving = saving
   }
 
-  static createNew({ userId, month, year, incomes, expenses, saving }: CreateBudgetParams) {
-    const id = BudgetId.fromPrimitives(UuidGeneratorRandom.generate())
-    return new Budget(id, userId, month, year, incomes, expenses, saving)
+  static createNew({ userId, month, year, fixedExpensesMoneyMovements }: NewBudgetParams) {
+    return new Budget(
+      BudgetId.fromPrimitives(UuidGeneratorRandom.generate()),
+      userId,
+      month,
+      year,
+      Expenses.createNew({ fixed: fixedExpensesMoneyMovements }),
+      Incomes.createEmpty(),
+      MoneyAmount.fromCents(0)
+    )
   }
 
   static fromPrimitives(primitives: BudgetPrimitives) {
@@ -63,9 +69,9 @@ export class Budget {
       UserId.fromPrimitives(primitives.userId),
       Month.fromPrimitives(primitives.month),
       Year.fromPrimitives(primitives.year),
-      primitives.incomes ? Incomes.fromPrimitives(primitives.incomes) : undefined,
-      primitives.expenses ? Expenses.fromPrimitives(primitives.expenses) : undefined,
-      primitives.saving ? MoneyMovement.fromPrimitives(primitives.saving) : undefined
+      Expenses.fromPrimitives(primitives.expenses),
+      Incomes.fromPrimitives(primitives.incomes),
+      MoneyAmount.fromCents(primitives.saving)
     )
   }
 
@@ -75,9 +81,9 @@ export class Budget {
       userId: this.userId.toPrimitives(),
       month: this.month.toPrimitives(),
       year: this.year.toPrimitives(),
-      incomes: this.incomes?.toPrimitives(),
-      expenses: this.expenses?.toPrimitives(),
-      saving: this.saving?.toPrimitives(),
+      incomes: this.incomes.toPrimitives(),
+      expenses: this.expenses.toPrimitives(),
+      saving: this.saving.getValue(),
     }
   }
 

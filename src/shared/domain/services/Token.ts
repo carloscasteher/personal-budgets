@@ -5,6 +5,7 @@ export const Token = {
   JWT_SIGNER: 'JWT_SIGNER',
   DB_CONFIG: 'DB_CONFIG',
   BUDGETS_REPOSITORY: 'BUDGETS_REPOSITORY',
+  FIXED_EXPENSES_REPOSITORY: 'FIXED_EXPENSES_REPOSITORY',
 } as const
 
 export type Token = (typeof Token)[keyof typeof Token]
