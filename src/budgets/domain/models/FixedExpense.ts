@@ -54,7 +54,7 @@ export class FixedExpense {
     amount,
     userId,
   }: CreateFixedExpenseParams): FixedExpense {
-    const id = ExtensableMoneyMovementId.fromPrimitives(UuidGeneratorRandom.generate())
+    const id = FixedExpenseId.fromPrimitives(UuidGeneratorRandom.generate())
     return new FixedExpense(id, userId, startDate, endDate, description, amount)
   }
 
