@@ -1,6 +1,5 @@
 import { BudgetId } from '../../../shared/domain/models/ids/BudgetId.ts'
 import { Expenses } from './Expenses.ts'
-import type { FixedExpense } from './FixedExpense.ts'
 import { Incomes } from './Incomes.ts'
 import { MoneyAmount } from './MoneyAmount.ts'
 import type { MoneyMovement } from './MoneyMovement.ts'
@@ -14,7 +13,7 @@ export type NewBudgetParams = {
   userId: UserId
   month: Month
   year: Year
-  fixedExpenses: MoneyMovement[]
+  fixedExpensesMoneyMovements: MoneyMovement[]
 }
 
 export type BudgetPrimitives = Primitives<Budget>
@@ -52,16 +51,16 @@ export class Budget {
     this.saving = saving
   }
 
-  static createNew({ userId, month, year, fixedExpenses }: NewBudgetParams) {
-    const id = BudgetId.fromPrimitives(UuidGeneratorRandom.generate())
-    const isFixedExpensesEmpty = fixedExpenses.length === 0
-    const expenses = !isFixedExpensesEmpty
-      ? Expenses.createNew({ fixed: fixedExpenses })
-      : Expenses.createEmpty()
-    const incomes = Incomes.createEmpty()
-    const saving = MoneyAmount.fromCents(0)
-    
-    return new Budget(id, userId, month, year, expenses, incomes, saving)
+  static createNew({ userId, month, year, fixedExpensesMoneyMovements }: NewBudgetParams) {
+    return new Budget(
+      BudgetId.fromPrimitives(UuidGeneratorRandom.generate()),
+      userId,
+      month,
+      year,
+      Expenses.createNew({ fixed: fixedExpensesMoneyMovements }),
+      Incomes.createEmpty(),
+      MoneyAmount.fromCents(0)
+    )
   }
 
   static fromPrimitives(primitives: BudgetPrimitives) {
