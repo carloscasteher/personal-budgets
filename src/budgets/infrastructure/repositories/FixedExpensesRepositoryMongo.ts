@@ -1,9 +1,12 @@
 import type { interfaces } from 'inversify'
 import { Collection, Db } from 'mongodb'
 import type { FixedExpenseId } from '../../../shared/domain/models/ids/FixedExpenseId.ts'
+import  { UserId } from '../../../shared/domain/models/ids/UserId.ts'
 import type { Closable } from '../../../shared/infrastructure/repositories/Closable.ts'
 import type { Reseteable } from '../../../shared/infrastructure/repositories/Reseteable.ts'
 import { FixedExpense, type FixedExpensePrimitives } from '../../domain/models/FixedExpense.ts'
+import  { Month } from '../../domain/models/Month.ts'
+import  { Year } from '../../domain/models/Year.ts'
 import type { FixedExpensesRepository } from '../../domain/repositories/FixedExpensesRepository.ts'
 
 export class FixedExpensesRepositoryMongo implements FixedExpensesRepository, Reseteable, Closable {
@@ -31,6 +34,17 @@ export class FixedExpensesRepositoryMongo implements FixedExpensesRepository, Re
     const fixedExpensePrimitives = await this.fixedExpenses.findOne({ id: id.toPrimitives() })
     if (!fixedExpensePrimitives) return undefined
     return FixedExpense.fromPrimitives(fixedExpensePrimitives)
+  }
+
+  async findAllActivesByUserId(userId: UserId, month: Month, year: Year): Promise<FixedExpense[]> {
+    const fixedExpenses = await this.fixedExpenses
+      .find({
+        userId: userId.toPrimitives(),
+        startDate: { $lte: new Date(`${year.toPrimitives()}-${month.formatForDate()}`) },
+        endDate: { $gte: new Date(`${year.toPrimitives()}-${month.formatForDate()}`) },
+      })
+      .toArray()
+    return fixedExpenses.map((fixedExpense) => FixedExpense.fromPrimitives(fixedExpense))
   }
 
   async reset() {
