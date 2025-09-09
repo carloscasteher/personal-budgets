@@ -1,10 +1,9 @@
-import { ExtensableMoneyMovementId } from '../../../shared/domain/models/ids/ExtensableMoneyMovementId.ts'
+import { MoneyAmount } from './MoneyAmount.ts'
 import type { Primitives } from '../../../shared/domain/models/hex/Primitives.ts'
-import { UuidGeneratorRandom } from '../../../shared/infrastructure/services/uuid-generator/UuidGeneratorRandom.ts'
 
 export type CreateBudgetParams = {
   description: string
-  amount: number
+  amount: MoneyAmount
   date: Date
 }
 
@@ -13,11 +12,11 @@ export type MoneyMovementPrimitives = Primitives<MoneyMovement>
 export class MoneyMovement {
   protected description: string
 
-  protected amount: number
+  protected amount: MoneyAmount
 
   protected date: Date
 
-  protected constructor(description: string, amount: number, date: Date) {
+  protected constructor(description: string, amount: MoneyAmount, date: Date) {
     this.description = description
     this.amount = amount
     this.date = date
@@ -30,7 +29,7 @@ export class MoneyMovement {
   static fromPrimitives(primitives: MoneyMovementPrimitives) {
     return new MoneyMovement(
       primitives.description,
-      primitives.amount,
+      MoneyAmount.fromCents(primitives.amount),
       primitives.date
     )
   }
@@ -38,7 +37,7 @@ export class MoneyMovement {
   toPrimitives() {
     return {
       description: this.description,
-      amount: this.amount,
+      amount: this.amount.getValue(),
       date: this.date,
     }
   }
