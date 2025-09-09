@@ -3,6 +3,7 @@ import { BindingScopeEnum, Container } from 'inversify'
 import { BudgetsRepositoryMongo } from './budgets/infrastructure/repositories/BudgetsRepositoryMongo.ts'
 import { CreateBudget } from './budgets/use-cases/CreateBudget.ts'
 import { CreateBudgetEndpoint } from './budgets/infrastructure/controllers/CreateBudgetEndpoint.ts'
+import { FixedExpensesRepositoryMongo } from './budgets/infrastructure/repositories/FixedExpensesRepositoryMongo.ts'
 import { JwtSignerHono } from './shared/infrastructure/services/jwt/JwtSignerHono.ts'
 import { LoggerPino } from './shared/infrastructure/services/logger/LoggerPino.ts'
 import { RequestContext } from './shared/infrastructure/controllers/middlewares/RequestContext.ts'
@@ -20,6 +21,7 @@ container.bind(Token.ENDPOINT).toConstantValue(CreateBudgetEndpoint)
 
 // Repositories
 container.bind(Token.BUDGETS_REPOSITORY).toDynamicValue(BudgetsRepositoryMongo.create)
+container.bind(Token.FIXED_EXPENSES_REPOSITORY).toDynamicValue(FixedExpensesRepositoryMongo.create)
 
 // Services
 container.bind(Token.LOGGER).toDynamicValue(LoggerPino.create)
