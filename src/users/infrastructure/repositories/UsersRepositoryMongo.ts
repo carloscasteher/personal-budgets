@@ -34,6 +34,11 @@ export class UsersRepositoryMongo implements UsersRepository, Reseteable, Closab
     return count > 0
   }
 
+  async findBy(email: EmailAddress): Promise<User | undefined> {
+    const primitives = await this.users.findOne({ email: email.toPrimitives() })
+    return primitives ? User.fromPrimitives(primitives) : undefined
+  }
+
   async reset() {
     await this.users.deleteMany()
   }

@@ -1,12 +1,15 @@
 import { BindingScopeEnum, Container } from 'inversify'
 
 import { BudgetsRepositoryMongo } from './budgets/infrastructure/repositories/BudgetsRepositoryMongo.ts'
+import { ClockDate } from './shared/infrastructure/services/clock/ClockDate.ts'
 import { CreateBudget } from './budgets/use-cases/CreateBudget.ts'
 import { CreateBudgetEndpoint } from './budgets/infrastructure/controllers/CreateBudgetEndpoint.ts'
 import { CryptoNode } from './shared/infrastructure/services/crypto/CryptoNode.ts'
 import { FixedExpensesRepositoryMongo } from './budgets/infrastructure/repositories/FixedExpensesRepositoryMongo.ts'
 import { JwtSignerHono } from './shared/infrastructure/services/jwt/JwtSignerHono.ts'
 import { LoggerPino } from './shared/infrastructure/services/logger/LoggerPino.ts'
+import { LoginUser } from './users/use-cases/LoginUser.ts'
+import { LoginUserEndpoint } from './users/infrastructure/controllers/LoginUserEndpoint.ts'
 import { RegisterUser } from './users/use-cases/RegisterUser.ts'
 import { RegisterUserEndpoint } from './users/infrastructure/controllers/RegisterUserEndpoint.ts'
 import { RequestContext } from './shared/infrastructure/controllers/middlewares/RequestContext.ts'
@@ -20,10 +23,12 @@ export const container = new Container({ defaultScope: BindingScopeEnum.Singleto
 // Use cases
 container.bind(CreateBudget).toDynamicValue(CreateBudget.create)
 container.bind(RegisterUser).toDynamicValue(RegisterUser.create)
+container.bind(LoginUser).toDynamicValue(LoginUser.create)
 
 // Controllers
 container.bind(Token.ENDPOINT).toConstantValue(CreateBudgetEndpoint)
 container.bind(Token.ENDPOINT).toConstantValue(RegisterUserEndpoint)
+container.bind(Token.ENDPOINT).toConstantValue(LoginUserEndpoint)
 
 // Repositories
 container.bind(Token.BUDGETS_REPOSITORY).toDynamicValue(BudgetsRepositoryMongo.create)
@@ -34,6 +39,7 @@ container.bind(Token.USERS_REPOSITORY).toDynamicValue(UsersRepositoryMongo.creat
 container.bind(Token.LOGGER).toDynamicValue(LoggerPino.create)
 container.bind(Token.JWT_SIGNER).toConstantValue(new JwtSignerHono())
 container.bind(Token.CRYPTO).toConstantValue(new CryptoNode())
+container.bind(Token.CLOCK).toConstantValue(new ClockDate())
 
 // Libraries
 container.load(mongoModule)

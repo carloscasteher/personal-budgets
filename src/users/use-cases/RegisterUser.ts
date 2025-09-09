@@ -1,3 +1,4 @@
+import type { Clock } from '../../shared/domain/services/Clock.ts'
 import type { Crypto } from '../../shared/domain/services/Crypto.ts'
 import type { EmailAddress } from '../../shared/domain/models/EmailAddress.ts'
 import type { PlainPassword } from '../../shared/domain/models/PlainPassword.ts'
@@ -21,6 +22,7 @@ export class RegisterUser extends UseCase {
       ...(await Promise.all([
         container.getAsync<UsersRepository>(Token.USERS_REPOSITORY),
         container.getAsync<Crypto>(Token.CRYPTO),
+        container.getAsync<Clock>(Token.CLOCK),
       ]))
     )
   }
@@ -29,10 +31,13 @@ export class RegisterUser extends UseCase {
 
   private readonly crypto: Crypto
 
-  constructor(usersRepository: UsersRepository, crypto: Crypto) {
+  private readonly clock: Clock
+
+  constructor(usersRepository: UsersRepository, crypto: Crypto, clock: Clock) {
     super()
     this.usersRepository = usersRepository
     this.crypto = crypto
+    this.clock = clock
   }
 
   async execute({ name, lastName, email, password }: RegisterUserParams) {
@@ -40,7 +45,16 @@ export class RegisterUser extends UseCase {
     if (emailAlreadyExists) {
       throw new Error(`User with email ${email} already exists`) // TODO: Create a custom error
     }
-    const user = User.register(name, lastName, email, password, await this.crypto.generateSalt())
+
+    const createdAt = this.clock.now().toDate()
+    const user = User.register(
+      name,
+      lastName,
+      email,
+      password,
+      createdAt,
+      await this.crypto.generateSalt()
+    )
     await this.usersRepository.save(user)
   }
 }

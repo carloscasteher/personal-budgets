@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
+import { ClockFake } from '../../shared/infrastructure/services/clock/ClockFake.ts'
 import { CryptoNode } from '../../shared/infrastructure/services/crypto/CryptoNode.ts'
 import { EmailAddress } from '../../shared/domain/models/EmailAddress.ts'
 import { PlainPassword } from '../../shared/domain/models/PlainPassword.ts'
@@ -14,7 +15,7 @@ describe('RegisterUser', () => {
   beforeEach(() => {
     usersRepository = UsersRepositoryMemory.create()
 
-    registerUser = new RegisterUser(usersRepository, new CryptoNode())
+    registerUser = new RegisterUser(usersRepository, new CryptoNode(), new ClockFake())
   })
 
   it('should register a new user with hashed password', async () => {

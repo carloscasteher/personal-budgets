@@ -1,6 +1,6 @@
 import { EmailAddress } from '../../../shared/domain/models/EmailAddress.ts'
 import { HashedPassword } from '../../../shared/domain/models/HashedPassword.ts'
-import type { PlainPassword } from '../../../shared/domain/models/PlainPassword.ts'
+import { PlainPassword } from '../../../shared/domain/models/PlainPassword.ts'
 import type { Primitives } from '../../../shared/domain/models/hex/Primitives.ts'
 import { UserId } from '../../../shared/domain/models/ids/UserId.ts'
 import { UuidGeneratorRandom } from '../../../shared/infrastructure/services/uuid-generator/UuidGeneratorRandom.ts'
@@ -49,11 +49,12 @@ export class User {
     lastName: string,
     email: EmailAddress,
     password: PlainPassword,
+    createdAt: Date,
     salt: string
   ): User {
     const hash = password.toHashed(salt)
     const id = new UserId(UuidGeneratorRandom.generate())
-    return new User(id, name, lastName, email, hash, salt, new Date())
+    return new User(id, name, lastName, email, hash, salt, createdAt)
   }
 
   static fromPrimitives({
@@ -78,6 +79,11 @@ export class User {
     )
   }
 
+  private hasPassword(plainPassword: PlainPassword) {
+    const hash = plainPassword.toHashed(this.salt)
+    return this.password.equalsTo(hash)
+  }
+
   toPrimitives() {
     return {
       id: this.id.toPrimitives(),
@@ -89,5 +95,21 @@ export class User {
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     }
+  }
+
+  getId() {
+    return this.id
+  }
+
+  has(value: PlainPassword) {
+    if (value instanceof PlainPassword) {
+      return this.hasPassword(value)
+    }
+
+    return false
+  }
+
+  doesNotHaveMatching(password: PlainPassword) {
+    return !this.has(password)
   }
 }
