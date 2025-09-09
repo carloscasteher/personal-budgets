@@ -6,4 +6,5 @@ export interface UsersRepository {
   save(user: User): Promise<void>
   findOneById(id: UserId): Promise<User | undefined>
   existsWith(email: EmailAddress): Promise<boolean>
+  findBy(email: EmailAddress): Promise<User | undefined>
 }

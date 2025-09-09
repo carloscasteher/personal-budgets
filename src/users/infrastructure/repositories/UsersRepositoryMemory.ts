@@ -32,6 +32,12 @@ export class UsersRepositoryMemory implements UsersRepository, Reseteable, Closa
     return this.users.values().some((user) => user.email === email.toPrimitives())
   }
 
+  async findBy(email: EmailAddress): Promise<User | undefined> {
+    const userPrimitives = this.users.values().find((user) => user.email === email.toPrimitives())
+    if (!userPrimitives) return undefined
+    return User.fromPrimitives(userPrimitives)
+  }
+
   async reset() {
     this.users.clear()
   }

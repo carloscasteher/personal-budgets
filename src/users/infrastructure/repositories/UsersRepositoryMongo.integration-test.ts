@@ -41,7 +41,7 @@ describe('UsersRepositoryMongo', () => {
       it('should save a user', async () => {
         const email = EmailAddress.fromPrimitives('test@example.com')
         const password = PlainPassword.fromPrimitives('testPassword123')
-        const user = User.register('Juan', 'Pérez', email, password, 'test-salt-123')
+        const user = User.register('Juan', 'Pérez', email, password, new Date(), 'test-salt-123')
 
         await usersRepository.save(user)
 
@@ -85,7 +85,7 @@ describe('UsersRepositoryMongo', () => {
       it('should check if user exists with email', async () => {
         const email = EmailAddress.fromPrimitives('exists@example.com')
         const password = PlainPassword.fromPrimitives('password123')
-        const user = User.register('Carlos', 'López', email, password, 'salt-456')
+        const user = User.register('Carlos', 'López', email, password, new Date(), 'salt-456')
 
         await usersRepository.save(user)
 
