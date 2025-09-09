@@ -3,11 +3,15 @@ import { BindingScopeEnum, Container } from 'inversify'
 import { BudgetsRepositoryMongo } from './budgets/infrastructure/repositories/BudgetsRepositoryMongo.ts'
 import { CreateBudget } from './budgets/use-cases/CreateBudget.ts'
 import { CreateBudgetEndpoint } from './budgets/infrastructure/controllers/CreateBudgetEndpoint.ts'
+import { CryptoNode } from './shared/infrastructure/services/crypto/CryptoNode.ts'
 import { FixedExpensesRepositoryMongo } from './budgets/infrastructure/repositories/FixedExpensesRepositoryMongo.ts'
 import { JwtSignerHono } from './shared/infrastructure/services/jwt/JwtSignerHono.ts'
 import { LoggerPino } from './shared/infrastructure/services/logger/LoggerPino.ts'
+import { RegisterUser } from './users/use-cases/RegisterUser.ts'
+import { RegisterUserEndpoint } from './users/infrastructure/controllers/RegisterUserEndpoint.ts'
 import { RequestContext } from './shared/infrastructure/controllers/middlewares/RequestContext.ts'
 import { Token } from './shared/domain/services/Token.ts'
+import { UsersRepositoryMongo } from './users/infrastructure/repositories/UsersRepositoryMongo.ts'
 import { createHono } from './shared/infrastructure/controllers/CreateHono.ts'
 import { mongoModule } from './shared/infrastructure/repositories/CreateMongoClient.ts'
 
@@ -15,17 +19,21 @@ export const container = new Container({ defaultScope: BindingScopeEnum.Singleto
 
 // Use cases
 container.bind(CreateBudget).toDynamicValue(CreateBudget.create)
+container.bind(RegisterUser).toDynamicValue(RegisterUser.create)
 
 // Controllers
 container.bind(Token.ENDPOINT).toConstantValue(CreateBudgetEndpoint)
+container.bind(Token.ENDPOINT).toConstantValue(RegisterUserEndpoint)
 
 // Repositories
 container.bind(Token.BUDGETS_REPOSITORY).toDynamicValue(BudgetsRepositoryMongo.create)
 container.bind(Token.FIXED_EXPENSES_REPOSITORY).toDynamicValue(FixedExpensesRepositoryMongo.create)
+container.bind(Token.USERS_REPOSITORY).toDynamicValue(UsersRepositoryMongo.create)
 
 // Services
 container.bind(Token.LOGGER).toDynamicValue(LoggerPino.create)
 container.bind(Token.JWT_SIGNER).toConstantValue(new JwtSignerHono())
+container.bind(Token.CRYPTO).toConstantValue(new CryptoNode())
 
 // Libraries
 container.load(mongoModule)
