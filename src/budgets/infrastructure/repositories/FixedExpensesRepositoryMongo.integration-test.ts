@@ -5,6 +5,7 @@ import type { Closable } from '../../../shared/infrastructure/repositories/Closa
 import { FixedExpense } from '../../domain/models/FixedExpense.ts'
 import type { FixedExpensesRepository } from '../../domain/repositories/FixedExpensesRepository.ts'
 import { FixedExpensesRepositoryMongo } from './FixedExpensesRepositoryMongo.ts'
+import { MoneyAmount } from '../../domain/models/MoneyAmount.ts'
 import type { Reseteable } from '../../../shared/infrastructure/repositories/Reseteable.ts'
 import { Token } from '../../../shared/domain/services/Token.ts'
 import { mongoModule } from '../../../shared/infrastructure/repositories/CreateMongoClient.ts'
@@ -37,7 +38,7 @@ describe('FixedExpensesRepositoryMongo', () => {
           startDate: new Date(),
           endDate: new Date(),
           description: 'Fixed expense',
-          amount: 100,
+          amount: MoneyAmount.fromCents(100),
           date: new Date(),
         })
 
