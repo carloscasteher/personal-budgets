@@ -1,4 +1,5 @@
 import { ExtensableMoneyMovementId } from '../../../shared/domain/models/ids/ExtensableMoneyMovementId.ts'
+import { MoneyAmount } from './MoneyAmount.ts'
 import { MoneyMovement } from './MoneyMovement.ts'
 import type { Primitives } from '../../../shared/domain/models/hex/Primitives.ts'
 import { UuidGeneratorRandom } from '../../../shared/infrastructure/services/uuid-generator/UuidGeneratorRandom.ts'
@@ -7,7 +8,7 @@ export type CreateExtensableMoneyMovementParams = {
   startDate: Date
   endDate: Date
   description: string
-  amount: number
+  amount: MoneyAmount
   date: Date
 }
 
@@ -25,7 +26,7 @@ export class ExtensableMoneyMovement extends MoneyMovement {
     endDate: Date,
     id: ExtensableMoneyMovementId,
     description: string,
-    amount: number,
+    amount: MoneyAmount,
     date: Date
   ) {
     super(description, amount, date)
@@ -51,7 +52,7 @@ export class ExtensableMoneyMovement extends MoneyMovement {
       primitives.endDate,
       ExtensableMoneyMovementId.fromPrimitives(primitives.id),
       primitives.description,
-      primitives.amount,
+      MoneyAmount.fromCents(primitives.amount),
       primitives.date
     )
   }
@@ -62,7 +63,7 @@ export class ExtensableMoneyMovement extends MoneyMovement {
       startDate: this.startDate,
       endDate: this.endDate,
       description: this.description,
-      amount: this.amount,
+      amount: this.amount.getValue(),
       date: this.date,
     }
   }
