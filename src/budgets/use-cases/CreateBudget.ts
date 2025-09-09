@@ -1,6 +1,7 @@
 import { Budget } from '../domain/models/Budget.ts'
 import type { BudgetsRepository } from '../domain/repositories/BudgetsRepository.ts'
 import type { FixedExpensesRepository } from '../domain/repositories/FixedExpensesRepository.ts'
+import { MoneyMovement } from '../domain/models/MoneyMovement.ts'
 import type { Month } from '../domain/models/Month.ts'
 import { Token } from '../../shared/domain/services/Token.ts'
 import type { UserId } from '../../shared/domain/models/ids/UserId.ts'
@@ -37,14 +38,21 @@ export class CreateBudget {
 
   async execute({ userId, month, year }: CreateBudgetParams) {
     await this.ensureBudgetDoesNotAlreadyExist(userId, month, year)
-    const activeFixedExpenses = await this.fixedExpensesRepository.findAllActivesByUserId(
+    const fixedExpenses = await this.fixedExpensesRepository.findAllActivesByUserId(
       userId,
       month,
       year
     )
-    const fixedExpenses = activeFixedExpenses.map((fixedExpense) => fixedExpense.toMoneyMovement(year, month))
+    const fixedExpensesMoneyMovements = fixedExpenses.map((fixedExpense) =>
+      MoneyMovement.createNew(fixedExpense.getMoneyMovementNeededData(month, year))
+    )
+    const budget = Budget.createNew({
+      userId,
+      month,
+      year,
+      fixedExpensesMoneyMovements,
+    })
 
-    const budget = Budget.createNew({ userId, month, year, fixedExpenses })
     await this.budgetsRepository.save(budget)
   }
 

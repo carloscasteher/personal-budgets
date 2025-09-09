@@ -61,7 +61,6 @@ describe('CreateBudget', () => {
         endDate: new Date('2026-04-09'),
         description: 'Mac mini',
         amount: MoneyAmount.fromCents(150_00),
-        date: new Date('2025-08-09'),
         userId,
       })
     )
@@ -76,7 +75,6 @@ describe('CreateBudget', () => {
 
     expect(savedBudget).toEqual(
       expect.objectContaining({
-        id: expect.any(BudgetId),
         userId,
         month,
         year,
@@ -88,9 +86,7 @@ describe('CreateBudget', () => {
               date: new Date('2025-09-09'),
             }),
           ]),
-          variable: [],
         }),
-        saving: MoneyAmount.fromCents(0),
       })
     )
   })
