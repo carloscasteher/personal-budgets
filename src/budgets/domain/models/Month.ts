@@ -13,13 +13,17 @@ export class Month extends ValueObject {
     return new Month(value)
   }
 
-  toPrimitives() {
-    return this.value
-  }
-
   private static validate(value: number) {
     if (value < 1 || value > 12) {
       throw new Error('Month must be between 1 and 12') // TODO: Create a custom error
     }
+  }
+
+  formatForDate(): string {
+    return this.value.toString().padStart(2, '0')
+  }
+
+  toPrimitives() {
+    return this.value
   }
 }
