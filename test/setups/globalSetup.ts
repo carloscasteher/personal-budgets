@@ -17,7 +17,11 @@ beforeAll(async (context) => {
   }
   const { container } = await import('./container.ts')
 
-  repos = await Promise.all([container.getAsync<Closable & Reseteable>(Token.BUDGETS_REPOSITORY)])
+  repos = await Promise.all([
+    container.getAsync<Closable & Reseteable>(Token.BUDGETS_REPOSITORY),
+    container.getAsync<Closable & Reseteable>(Token.FIXED_EXPENSES_REPOSITORY),
+    container.getAsync<Closable & Reseteable>(Token.USERS_REPOSITORY),
+  ])
 })
 
 beforeEach(async (context) => {
