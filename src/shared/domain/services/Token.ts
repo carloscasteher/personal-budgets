@@ -6,6 +6,8 @@ export const Token = {
   DB_CONFIG: 'DB_CONFIG',
   BUDGETS_REPOSITORY: 'BUDGETS_REPOSITORY',
   FIXED_EXPENSES_REPOSITORY: 'FIXED_EXPENSES_REPOSITORY',
+  USERS_REPOSITORY: 'USERS_REPOSITORY',
+  CRYPTO: 'CRYPTO',
 } as const
 
 export type Token = (typeof Token)[keyof typeof Token]
