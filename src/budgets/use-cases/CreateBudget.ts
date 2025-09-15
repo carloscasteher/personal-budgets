@@ -1,4 +1,6 @@
 import { Budget } from '../domain/models/Budget.ts'
+import { BudgetAlreadyExistsError } from '../domain/errors/BudgetAlreadyExistsError.ts'
+import { BudgetsQuery } from '../domain/models/BudgetsQuery.ts'
 import type { BudgetsRepository } from '../domain/repositories/BudgetsRepository.ts'
 import type { FixedExpensesRepository } from '../domain/repositories/FixedExpensesRepository.ts'
 import { MoneyMovement } from '../domain/models/MoneyMovement.ts'
@@ -57,9 +59,11 @@ export class CreateBudget {
   }
 
   private async ensureBudgetDoesNotAlreadyExist(userId: UserId, month: Month, year: Year) {
-    const budget = await this.budgetsRepository.findOneByUserIdMonthAndYear(userId, month, year)
-    if (budget) {
-      throw new Error('Budget already exists') // TODO: create a custom error
+    const budgets = await this.budgetsRepository.findManyBy(
+      BudgetsQuery.createNew({ userId, month, year })
+    )
+    if (budgets.length > 0) {
+      throw new BudgetAlreadyExistsError()
     }
   }
 }

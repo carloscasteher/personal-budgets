@@ -6,6 +6,8 @@ import type { PlainPassword } from '../../shared/domain/models/PlainPassword.ts'
 import { Token } from '../../shared/domain/services/Token.ts'
 import { UseCase } from '../../shared/domain/models/hex/UseCase.ts'
 import type { User } from '../domain/models/User.ts'
+import { UserInvalidLoginCredentialsError } from '../domain/errors/UserInvalidLoginCredentialsError.ts'
+import { UserNotFoundError } from '../domain/errors/UserNotFoundError.ts'
 import type { UsersRepository } from '../domain/repositories/UsersRepository.ts'
 import { config } from '../../shared/infrastructure/config.ts'
 import type { interfaces } from 'inversify'
@@ -40,11 +42,11 @@ export class LoginUser extends UseCase {
   async execute({ email, password }: LoginUserParams) {
     const user = await this.usersRepository.findBy(email)
     if (!user) {
-      throw new Error('User not found')
+      throw new UserNotFoundError(email)
     }
 
     if (user.doesNotHaveMatching(password)) {
-      throw new Error('Invalid password')
+      throw new UserInvalidLoginCredentialsError()
     }
 
     return await this.createAccessToken(user)

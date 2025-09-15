@@ -6,6 +6,11 @@ import { CreateBudget } from './budgets/use-cases/CreateBudget.ts'
 import { CreateBudgetEndpoint } from './budgets/infrastructure/controllers/CreateBudgetEndpoint.ts'
 import { CryptoNode } from './shared/infrastructure/services/crypto/CryptoNode.ts'
 import { FixedExpensesRepositoryMongo } from './budgets/infrastructure/repositories/FixedExpensesRepositoryMongo.ts'
+import { GetBudget } from './budgets/use-cases/GetBudget.ts'
+import { GetBudgetEndpoint } from './budgets/infrastructure/controllers/GetBudgetEndpoint.ts'
+import { GetBudgets } from './budgets/use-cases/GetBudgets.ts'
+import { GetBudgetsEndpoint } from './budgets/infrastructure/controllers/GetBudgetsEndpoint.ts'
+import { JwtDecoderHono } from './shared/infrastructure/services/jwt/JwtDecoderHono.ts'
 import { JwtSignerHono } from './shared/infrastructure/services/jwt/JwtSignerHono.ts'
 import { LoggerPino } from './shared/infrastructure/services/logger/LoggerPino.ts'
 import { LoginUser } from './users/use-cases/LoginUser.ts'
@@ -22,11 +27,15 @@ export const container = new Container({ defaultScope: BindingScopeEnum.Singleto
 
 // Use cases
 container.bind(CreateBudget).toDynamicValue(CreateBudget.create)
+container.bind(GetBudgets).toDynamicValue(GetBudgets.create)
+container.bind(GetBudget).toDynamicValue(GetBudget.create)
 container.bind(RegisterUser).toDynamicValue(RegisterUser.create)
 container.bind(LoginUser).toDynamicValue(LoginUser.create)
 
 // Controllers
 container.bind(Token.ENDPOINT).toConstantValue(CreateBudgetEndpoint)
+container.bind(Token.ENDPOINT).toConstantValue(GetBudgetsEndpoint)
+container.bind(Token.ENDPOINT).toConstantValue(GetBudgetEndpoint)
 container.bind(Token.ENDPOINT).toConstantValue(RegisterUserEndpoint)
 container.bind(Token.ENDPOINT).toConstantValue(LoginUserEndpoint)
 
@@ -38,6 +47,7 @@ container.bind(Token.USERS_REPOSITORY).toDynamicValue(UsersRepositoryMongo.creat
 // Services
 container.bind(Token.LOGGER).toDynamicValue(LoggerPino.create)
 container.bind(Token.JWT_SIGNER).toConstantValue(new JwtSignerHono())
+container.bind(Token.JWT_DECODER).toConstantValue(new JwtDecoderHono())
 container.bind(Token.CRYPTO).toConstantValue(new CryptoNode())
 container.bind(Token.CLOCK).toConstantValue(new ClockDate())
 

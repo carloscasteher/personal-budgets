@@ -3,48 +3,51 @@ import { UserId } from '../../../shared/domain/models/ids/UserId.ts'
 import { factory, type Endpoint } from '../../../shared/infrastructure/controllers/factory.ts'
 import { Month } from '../../domain/models/Month.ts'
 import { Year } from '../../domain/models/Year.ts'
-import { CreateBudget } from '../../use-cases/CreateBudget.ts'
 
 import { describeRoute } from 'hono-openapi'
 
 import type { JwtDecoder } from '../../../shared/domain/services/JwtDecoder.ts'
 import { Token } from '../../../shared/domain/services/Token.ts'
 import { ApiTag } from '../../../shared/infrastructure/controllers/schemas/ApiTag.ts'
-import { CreateBudgetBodyDto } from './dtos/CreateBudgetBodyDto.ts'
+import { BudgetsQuery } from '../../domain/models/BudgetsQuery.ts'
+import { GetBudgets } from '../../use-cases/GetBudgets.ts'
+import { BudgetsDto } from './dtos/BudgetsDto.ts'
+import { GetBudgetsQueryDto } from './dtos/GetBudgetsQueryDto.ts'
 
-export const CreateBudgetEndpoint = {
-  method: 'post',
-  path: '/api/v1/budgets/creation',
+export const GetBudgetsEndpoint = {
+  method: 'get',
+  path: '/api/v1/budgets',
   handlers: factory.createHandlers(
     describeRoute({
-      summary: 'Create a new budget',
-      description: 'Creates a new budget for a user',
+      summary: 'Get budgets',
+      description: 'Gets budgets by filters query',
       tags: [ApiTag.BUDGETS],
       security: [{ bearerAuth: [] }],
       responses: {
-        201: {
-          description: 'Budget created',
+        200: {
+          description: 'Budgets retrieved',
         },
       },
     }),
-    validator('json', CreateBudgetBodyDto),
+    validator('query', GetBudgetsQueryDto),
     async (context) => {
-      const createBudget = await context.var.container.getAsync(CreateBudget)
+      const getBudgets = await context.var.container.getAsync(GetBudgets)
       const jwtDecoder = await context.var.container.getAsync<JwtDecoder>(Token.JWT_DECODER)
       const token = context.req.header('Authorization')?.split('Bearer ')[1]
       if (!token) {
-        return
+        return context.json({ error: 'Authentication required' }, 401)
       }
       const userIdPrimitives = jwtDecoder.decode(token).sub
-      const body = context.req.valid('json')
 
-      await createBudget.execute({
+      const query = context.req.valid('query')
+      const budgetsQuery = BudgetsQuery.createNew({
         userId: UserId.fromPrimitives(userIdPrimitives),
-        month: Month.fromPrimitives(body.month),
-        year: Year.fromPrimitives(body.year),
+        month: query.month ? Month.fromPrimitives(query.month) : undefined,
+        year: query.year ? Year.fromPrimitives(query.year) : undefined,
       })
-      
-      return context.body(null, 201)
+      const budgets = await getBudgets.execute(budgetsQuery)
+
+      return context.json(new BudgetsDto(budgets))
     }
   ),
 } satisfies Endpoint

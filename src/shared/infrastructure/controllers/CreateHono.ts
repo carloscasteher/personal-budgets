@@ -3,6 +3,7 @@ import { Hono } from 'hono'
 import { Token } from '../../domain/services/Token.ts'
 import { config } from '../config.ts'
 import { containerMiddleware } from './middlewares/ContainerMiddleware.ts'
+import { cors } from 'hono/cors'
 import { handle } from './middlewares/ErrorHandler.ts'
 import type { interfaces } from 'inversify'
 import { jwt } from 'hono/jwt'
@@ -17,6 +18,14 @@ declare module 'hono' {
 
 export function createHono({ container }: interfaces.Context) {
   const app = new Hono()
+  
+  app.use(cors({
+    origin: ['http://localhost:5173'],
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+  }))
+  
   app.use(containerMiddleware(container))
   app.use(requestContextMiddleware)
   app.use(loggerMiddleware(container.get(Token.LOGGER)))

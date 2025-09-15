@@ -2,6 +2,7 @@ import { BindingScopeEnum, Container } from 'inversify'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 
 import { Budget } from '../../domain/models/Budget.ts'
+import { BudgetsQuery } from '../../domain/models/BudgetsQuery.ts'
 import type { BudgetsRepository } from '../../domain/repositories/BudgetsRepository.ts'
 import { BudgetsRepositoryMongo } from './BudgetsRepositoryMongo.ts'
 import type { Closable } from '../../../shared/infrastructure/repositories/Closable.ts'
@@ -60,7 +61,8 @@ describe('BudgetsRepositoryMongo', () => {
         })
         await budgetRepository.save(budget)
 
-        const savedBudgets = await budgetRepository.findManyByUserId(userId)
+        const query = BudgetsQuery.createNew({ userId })
+        const savedBudgets = await budgetRepository.findManyBy(query)
 
         expect(savedBudgets[0]).toEqual(budget)
       })
@@ -72,14 +74,15 @@ describe('BudgetsRepositoryMongo', () => {
         const budget = Budget.createNew({
           userId,
           month,
-          year, 
+          year,
           fixedExpensesMoneyMovements: [],
         })
         await budgetRepository.save(budget)
 
-        const savedBudget = await budgetRepository.findOneByUserIdMonthAndYear(userId, month, year)
+        const query = BudgetsQuery.createNew({ userId, month, year })
+        const savedBudgets = await budgetRepository.findManyBy(query)
 
-        expect(savedBudget).toEqual(budget)
+        expect(savedBudgets[0]).toEqual(budget)
       })
     }
   )

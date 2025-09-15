@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import { BudgetId } from '../../shared/domain/models/ids/BudgetId.ts'
+import { BudgetsQuery } from '../domain/models/BudgetsQuery.ts'
 import type { BudgetsRepository } from '../domain/repositories/BudgetsRepository.ts'
 import { BudgetsRepositoryMemory } from '../infrastructure/repositories/BudgetsRepositoryMemory.ts'
 import { CreateBudget } from './CreateBudget.ts'
@@ -36,9 +37,9 @@ describe('CreateBudget', () => {
       year,
     })
 
-    const savedBudget = await budgetsRepository.findOneByUserIdMonthAndYear(userId, month, year)
+    const savedBudget = await budgetsRepository.findManyBy(BudgetsQuery.createNew({ userId, month, year }))
 
-    expect(savedBudget).toEqual(
+    expect(savedBudget[0]).toEqual(
       expect.objectContaining({
         id: expect.any(BudgetId),
         userId,
@@ -71,9 +72,9 @@ describe('CreateBudget', () => {
       year,
     })
 
-    const savedBudget = await budgetsRepository.findOneByUserIdMonthAndYear(userId, month, year)
+    const savedBudget = await budgetsRepository.findManyBy(BudgetsQuery.createNew({ userId, month, year }))
 
-    expect(savedBudget).toEqual(
+    expect(savedBudget[0]).toEqual(
       expect.objectContaining({
         userId,
         month,

@@ -1,12 +1,10 @@
 import type { interfaces } from 'inversify'
 import { type Collection, Db } from 'mongodb'
 import { BudgetId } from '../../../shared/domain/models/ids/BudgetId.ts'
-import type { UserId } from '../../../shared/domain/models/ids/UserId.ts'
 import type { Closable } from '../../../shared/infrastructure/repositories/Closable.ts'
 import type { Reseteable } from '../../../shared/infrastructure/repositories/Reseteable.ts'
 import { Budget, type BudgetPrimitives } from '../../domain/models/Budget.ts'
-import type { Month } from '../../domain/models/Month.ts'
-import type { Year } from '../../domain/models/Year.ts'
+import type { BudgetsQuery } from '../../domain/models/BudgetsQuery.ts'
 import type { BudgetsRepository } from '../../domain/repositories/BudgetsRepository.ts'
 
 export class BudgetsRepositoryMongo implements BudgetsRepository, Reseteable, Closable {
@@ -32,23 +30,16 @@ export class BudgetsRepositoryMongo implements BudgetsRepository, Reseteable, Cl
     return Budget.fromPrimitives(primitives)
   }
 
-  async findManyByUserId(userId: UserId): Promise<Budget[]> {
-    const primitives = await this.budgets.find({ userId: userId.toPrimitives() }).toArray()
-    return primitives.map(Budget.fromPrimitives)
-  }
+  async findManyBy(query: BudgetsQuery): Promise<Budget[]> {
+    const filter: Record<string, unknown> = {
+      ...{ userId: query.userId.toPrimitives() },
+      ...(query.month ? { month: query.month.toPrimitives() } : {}),
+      ...(query.year ? { year: query.year.toPrimitives() } : {}),
+    }
 
-  async findOneByUserIdMonthAndYear(
-    userId: UserId,
-    month: Month,
-    year: Year
-  ): Promise<Budget | undefined> {
-    const primitives = await this.budgets.findOne({
-      userId: userId.toPrimitives(),
-      month: month.toPrimitives(),
-      year: year.toPrimitives(),
-    })
-    if (!primitives) return undefined
-    return Budget.fromPrimitives(primitives)
+    const primitives = await this.budgets.find(filter).toArray()
+
+    return primitives.map(Budget.fromPrimitives)
   }
 
   async reset() {

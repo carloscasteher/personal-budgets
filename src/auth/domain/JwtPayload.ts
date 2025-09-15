@@ -1,4 +1,3 @@
-
 export type JwtPayload = {
   /**
    * The subject (user) identifier of the token.
