@@ -11,5 +11,10 @@ const HttpStatus = {
 type HttpStatus = (typeof HttpStatus)[keyof typeof HttpStatus]
 
 export const domainErrorToHttpStatusCode: Record<DomainErrorCode, HttpStatus> = {
+  [DomainErrorCode.BUDGET_ALREADY_EXISTS]: HttpStatus.CONFLICT,
+  [DomainErrorCode.BUDGET_NOT_FOUND]: HttpStatus.NOT_FOUND,
   [DomainErrorCode.INTERNAL_ERROR]: HttpStatus.INTERNAL_SERVER_ERROR,
+  [DomainErrorCode.USER_INVALID_LOGIN_CREDENTIALS]: HttpStatus.UNAUTHORIZED,
+  [DomainErrorCode.USER_NOT_FOUND]: HttpStatus.NOT_FOUND,
+  [DomainErrorCode.USER_WITH_EMAIL_ALREADY_EXISTS]: HttpStatus.CONFLICT,
 }

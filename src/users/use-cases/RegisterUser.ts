@@ -6,6 +6,7 @@ import { Token } from '../../shared/domain/services/Token.ts'
 import { UseCase } from '../../shared/domain/models/hex/UseCase.ts'
 import { User } from '../domain/models/User.ts'
 import type { UserId } from '../../shared/domain/models/ids/UserId.ts'
+import { UserWithEmailAlreadyExistsError } from '../domain/errors/UserWithEmailAlreadyExistsError.ts'
 import type { UsersRepository } from '../domain/repositories/UsersRepository.ts'
 import type { interfaces } from 'inversify'
 
@@ -43,7 +44,7 @@ export class RegisterUser extends UseCase {
   async execute({ name, lastName, email, password }: RegisterUserParams) {
     const emailAlreadyExists = await this.usersRepository.existsWith(email)
     if (emailAlreadyExists) {
-      throw new Error(`User with email ${email} already exists`) // TODO: Create a custom error
+      throw new UserWithEmailAlreadyExistsError(email)
     }
 
     const createdAt = this.clock.now().toDate()

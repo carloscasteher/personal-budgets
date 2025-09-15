@@ -90,4 +90,8 @@ export class Budget {
   getId() {
     return this.id
   }
+  
+  getYear() {
+    return this.year
+  }
 }
